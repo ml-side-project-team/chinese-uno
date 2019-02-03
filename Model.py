@@ -20,6 +20,9 @@ class Card:
         self.suit = suit
         self.rank = rank
 
+    def __lt__(self, other):
+        return Card.Ranks.get(self.rank) < Card.Ranks.get(other.rank)
+
 
 class Player:
     def __init__(self):
@@ -35,11 +38,12 @@ class Player:
     def play(self):
         # return which card you want to play
         # should probably be handled by the controller
-        return Card()
+        pass
 
 
 def shuffle():
     # randomly choose a deck
+    # start with all cards and randomly choose cards until none are left
     deck = []
     return deck
 
@@ -57,19 +61,32 @@ def distribute_cards(players):
         players[j].set_hand(player_hands[j])
 
 
-def playable_state():
+def playable_state(players):
     # check to see if at least two players have cards left in their hands
     return True
+
+
+def find_first_player():
+    # find players with 3 of hearts
+    # choose one at random
+    pass
 
 
 def play_round():
     current_type = "singleCard"
     current_card_rank = -1
-    # distribute the cards to players
+    numPlayers = 6
+    players = []
+    for i in range(0, numPlayers):
+        players.append(Player())
+    distribute_cards(players)
     # find players with 3 of hearts and choose one
-    # while people can play
+    find_first_player()
+    while playable_state(players):
         # cycle through players
+        for j in range(0, numPlayers):
             # each player play their card
+            players[j].play()
             # assign points for different results (mostly illegal moves)
 
 
