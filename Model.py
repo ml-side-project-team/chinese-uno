@@ -1,3 +1,16 @@
+import random
+
+numDecks = 2
+current_type = "singleCard"
+numPlayers = 6
+
+class Move:
+    Types = ["Pass", "SingleCard"]
+
+    def __init__(self, type, cards):
+        self.type = type
+        self.cards = cards
+
 class Card:
     Suits = ["Diamonds", "Clubs", "Hearts", "Spades"]
     Ranks = {
@@ -23,6 +36,19 @@ class Card:
     def __lt__(self, other):
         return Card.Ranks.get(self.rank) < Card.Ranks.get(other.rank)
 
+    # returns an ordered deck
+    def new_deck(self):
+        deck = []
+        for deck in range(0, numDecks):
+            for suit in Card.Suits:
+                for rank in Card.Ranks:
+                    deck.append(Card(suit, rank))
+        return deck
+
+    def is_illegal(self, current_card_rank, played_card_rank):
+        # TODO return whether or not is legal play
+        return True
+
 
 class Player:
     def __init__(self):
@@ -35,17 +61,18 @@ class Player:
     def set_hand(self, hand):
         self.hand = hand
 
-    def play(self):
-        # return which card you want to play
-        # should probably be handled by the controller
+    # returns a list of cards you want to play in order
+
+    # this is to help modularity of ai players so we don't
+    # have to requery them over and over for new plays if they
+    # play something illegal
+    # TODO
+    def play(self, topCard):
         pass
 
 
-def shuffle():
-    # randomly choose a deck
-    # start with all cards and randomly choose cards until none are left
-    deck = []
-    return deck
+def shuffle(deck):
+    return random.shuffle(deck)
 
 
 def distribute_cards(players):
@@ -62,36 +89,43 @@ def distribute_cards(players):
 
 
 def playable_state(players):
-    # check to see if at least two players have cards left in their hands
+    # TODO check to see if at least two players have cards left in their hands
     return True
 
 
 def find_first_player():
-    # find players with 3 of hearts
-    # choose one at random
+    # TODO find players with 3 of hearts
+    # TODO choose one at random
+    # TODO make them play (remove card from their hand)
     pass
 
+def play_round(players):
+    players_in_round = players.size()
+    current_card = Card("Hearts", "3")
+    # find players with 3 of hearts and choose one
+    find_first_player()
+    # TODO re order list so next player is first
+    while playable_state(players):
+        # cycle through players
+        for current_player in range(0, players_in_round):
+            # each player play their card
+            card_play_preference = players[current_player].play()
+            # TODO check if illegal
+            for i in range(0, card_play_preference):
+                if Card.is_illegal(current_card, card_play_preference[i]):
+                    # TODO dock points
+                    pass
+                else:
+                    if(card_play_preference):
+                        current_card = card_play_preference[i]
 
-def play_round():
-    current_type = "singleCard"
-    current_card_rank = -1
-    numPlayers = 6
+
+def play_match():
     players = []
     for i in range(0, numPlayers):
         players.append(Player())
     distribute_cards(players)
-    # find players with 3 of hearts and choose one
-    find_first_player()
-    while playable_state(players):
-        # cycle through players
-        for j in range(0, numPlayers):
-            # each player play their card
-            players[j].play()
-            # assign points for different results (mostly illegal moves)
-
-
-def game_loop():
     while playable_state():
         play_round()
-    # assign points to winners
+    # TODO assign points to winners
     return
