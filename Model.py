@@ -33,10 +33,14 @@ class Card:
         self.suit = suit
         self.rank = rank
 
+    def __eq__(self, other):
+        return self.rank == other.rank and self.suit == other.suit
+
     def __lt__(self, other):
         return Card.Ranks.get(self.rank) < Card.Ranks.get(other.rank)
 
     # returns an ordered deck
+    @staticmethod
     def new_deck(self):
         deck = []
         for deck in range(0, numDecks):
@@ -45,9 +49,9 @@ class Card:
                     deck.append(Card(suit, rank))
         return deck
 
-    def is_illegal(self, current_card_rank, played_card_rank):
-        # TODO return whether or not is legal play
-        return True
+    @staticmethod
+    def is_illegal(self, current_card, played_card):
+        return not current_card < played_card
 
 
 class Player:
@@ -61,13 +65,20 @@ class Player:
     def set_hand(self, hand):
         self.hand = hand
 
+    def remove_card(self, card):
+        self.hand.remove(card)
+
+    def has_three_hearts(self):
+        return Card("Hearts", "3") in self.hand
+
     # returns a list of cards you want to play in order
 
     # this is to help modularity of ai players so we don't
-    # have to requery them over and over for new plays if they
+    # have to re-query them over and over for new plays if they
     # play something illegal
     # TODO
     def play(self, topCard):
+        # should we check for illegal cards here?
         pass
 
 
@@ -93,30 +104,46 @@ def playable_state(players):
     return True
 
 
-def find_first_player():
-    # TODO find players with 3 of hearts
-    # TODO choose one at random
-    # TODO make them play (remove card from their hand)
-    pass
+def find_first_player(players):
+    # find players with 3 of hearts
+    competing_players = []
+    for i in range(0, players.size()):
+        if Player.has_three_hearts(players[i]):
+            competing_players.append(i)
+    # choose one at random
+    first_player = competing_players[random.randrange(0, len(competing_players))]
+    return first_player
+
+
+# returns array with same order but player i up first
+def set_first_player(players, i):
+    if i > len(players):
+        i = 0
+    return players[i:] + players[:i]
+
 
 def play_round(players):
     players_in_round = players.size()
     current_card = Card("Hearts", "3")
     # find players with 3 of hearts and choose one
-    find_first_player()
-    # TODO re order list so next player is first
+    first_player = find_first_player()
+    # make them play (remove card from their hand)
+    players[first_player].removeCard(Card("Hearts", "3"))
+    # set the player to be the second player (the first must play the 3 of hearts)
+    players = set_first_player(players, first_player + 1)
+    # TODO this should also check to see if everyone passed
     while playable_state(players):
         # cycle through players
         for current_player in range(0, players_in_round):
             # each player play their card
             card_play_preference = players[current_player].play()
-            # TODO check if illegal
             for i in range(0, card_play_preference):
+                # check if illegal
                 if Card.is_illegal(current_card, card_play_preference[i]):
                     # TODO dock points
                     pass
                 else:
-                    if(card_play_preference):
+                    if card_play_preference:
                         current_card = card_play_preference[i]
 
 
