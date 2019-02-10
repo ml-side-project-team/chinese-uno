@@ -13,7 +13,7 @@ class MoveSource:
 class ConsoleSource(MoveSource):
 
     def play(self, hand, current_card):
-        print("Current card:\t" + current_card.rank + " of " + current_card.suit + "\nYour hand:")
+        print("Current card:\t" + str(current_card) + "\nYour hand:")
         for i, card in enumerate(hand):
             print(str(i) + ". " + str(card))
         while True:

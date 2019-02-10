@@ -57,7 +57,10 @@ class Card:
 
     @staticmethod
     def is_illegal(current_card, played_card):
-        return not current_card < played_card
+        if current_card is None:
+            return False
+        else:
+            return not current_card < played_card
 
 
 class Player:
@@ -152,19 +155,24 @@ def play_round(players):
     players[first_player].remove_card(Card("Hearts", "3"))
     # set the player to be the second player (the first must play the 3 of hearts)
     players = set_first_player(players, first_player + 1)
-    # TODO this should also check to see if everyone passed
+
+    consecutive_passes = 0
     while playable_state(players):
         # cycle through players
         for current_player in range(0, players_in_round):
+            if consecutive_passes >= players_in_round - 1:
+                current_card = None
             print(players[current_player].name + "'s Turn:")
             # each player play their card
             card_play_preference = players[current_player].play(current_card)
             move = move_from_preference(card_play_preference, current_card)
             if move is None:
                 print(players[current_player].name + " Passed")
-                pass
+                consecutive_passes += 1
             else:
+                players[current_player].remove_card(move)
                 current_card = move
+                consecutive_passes = 0
 
 
 def play_match():
