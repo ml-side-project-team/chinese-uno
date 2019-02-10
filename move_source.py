@@ -17,10 +17,13 @@ class ConsoleSource(MoveSource):
         for i, card in enumerate(hand):
             print(str(i) + ". " + str(card))
         while True:
-            move = int(input("Please enter a move: "))
-            print(move)
-            if 0 <= move < len(hand):
-                print(hand[move])
-                return [hand[move]]
+            entry = input("Please enter a move: ")
+            if entry.isdigit():
+                move = int(entry)
+                if 0 <= move < len(hand):
+                    print(hand[move])
+                    return [hand[move]]
             else:
-                print("Invalid move. Please enter the index of the move you would like to play.")
+                if entry in ("p", "pass"):
+                    return None
+            print("Invalid move. Please enter the index of the move you would like to play.")
