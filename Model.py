@@ -1,4 +1,5 @@
 import random
+import move_source
 
 numDecks = 2
 current_type = "singleCard"
@@ -41,6 +42,9 @@ class Card:
     def __lt__(self, other):
         return Card.Ranks.get(self.rank) < Card.Ranks.get(other.rank)
 
+    def __str__(self):
+        return str(self.rank) + " of " + str(self.suit)
+
     # returns an ordered deck
     @staticmethod
     def new_deck():
@@ -52,14 +56,16 @@ class Card:
         return deck
 
     @staticmethod
-    def is_illegal(self, current_card, played_card):
+    def is_illegal(current_card, played_card):
         return not current_card < played_card
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, name, source):
         self.points = 0
         self.hand = []
+        self.name = name
+        self.source = source
 
     def add_points(self, points):
         self.points = points
@@ -79,9 +85,8 @@ class Player:
     # have to re-query them over and over for new plays if they
     # play something illegal
     # TODO
-    def play(self, topCard):
-        # should we check for illegal cards here?
-        pass
+    def play(self, top_card):
+        return self.source.play(self.hand, top_card)
 
 
 def shuffle(deck):
@@ -92,7 +97,7 @@ def distribute_cards(players):
     deck = Card.new_deck()
     shuffle(deck)
     player_num = 0
-    player_hands = [[]] * len(players)
+    player_hands = [[] for _ in range(0, len(players))]
     for i in range(0, len(deck)):
         player_hands[player_num].append(deck[i])
         player_num = player_num + 1
@@ -151,10 +156,12 @@ def play_round(players):
     while playable_state(players):
         # cycle through players
         for current_player in range(0, players_in_round):
+            print(players[current_player].name + "'s Turn:")
             # each player play their card
             card_play_preference = players[current_player].play(current_card)
             move = move_from_preference(card_play_preference, current_card)
             if move is None:
+                print(players[current_player].name + " Passed")
                 pass
             else:
                 current_card = move
@@ -163,7 +170,7 @@ def play_round(players):
 def play_match():
     players = []
     for i in range(0, numPlayers):
-        players.append(Player())
+        players.append(Player("Player: " + str(i), move_source.ConsoleSource()))
     distribute_cards(players)
     while playable_state(players):
         play_round(players)
