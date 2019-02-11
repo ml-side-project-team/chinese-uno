@@ -87,23 +87,36 @@ class Player:
 
 
 class Game:
-    def __init__(self, players):
-        self.players = players
-        self.scoreboard = []
 
-    def play_round(self):
+    @staticmethod
+    def simulate_game(players):
+        """
+        Sets up and runs a game by copying the given players and then shuffling decks using the default behavior
+        :param players: The players to use in the game
+        :return: The results of the game
+        """
         # Make a copy of the list of players
-        players_copy = self.players.copy()
+        players_copy = players.copy()
         # Deal the players cards
-        self.distribute_cards(players_copy)
+        Game.distribute_cards(players_copy)
 
         # Get the index of the player who will play first and remove the three of hearts from their hand
-        current_player = self.set_up_first_player(players_copy)
-        self.run_game(players_copy, current_player)
+        current_player = Game.set_up_first_player(players_copy)
+        return Game.run_game(players_copy, current_player)
 
-    def run_game(self, players, current_player=0, current_card=Card("Hearts", "3")):
+    @staticmethod
+    def run_game(players, current_player=0, current_card=Card("Hearts", "3")):
+        """
+        Runs a game with the given initial conditions
+        :param players: The players to use in this game. This will be modified
+        :param current_player: The index of the starting player
+        :param current_card: The current card at the top of the stack
+        :return: The the placement of each player, the total number of moves made in the game (including passes)
+        """
+        scoreboard = []
+        moves = 0
         consecutive_passes = 0
-        while len(players) > 1:
+        while len(players) > 0:
             while current_player < len(players):
                 # If the game has passed all the way around
                 if consecutive_passes >= len(players) - 1:
@@ -112,7 +125,7 @@ class Game:
                 # Get move preference from the player
                 card_play_preference = players[current_player].play(current_card)
                 # Translate the preference into a move
-                move = self.move_from_preference(card_play_preference, current_card)
+                move = Game.move_from_preference(card_play_preference, current_card)
                 if move is None:
                     print(players[current_player].name + " Passed")
                     consecutive_passes += 1
@@ -123,11 +136,14 @@ class Game:
                     consecutive_passes = 0
                     # If the player has no cards left after they make the move
                     if len(players[current_player].hand) == 0:
-                        self.scoreboard.append(players[current_player])
+                        scoreboard.append(players[current_player])
                         del players[current_player]
                     else:
                         current_player += 1
-                current_player %= len(players)
+                moves += 1
+                if len(players) > 0:
+                    current_player %= len(players)
+        return scoreboard, moves
 
     @staticmethod
     def shuffle(deck):
@@ -193,6 +209,3 @@ def play_match(num_players=6):
     game.play_round()
     # TODO assign points to winners
     return
-
-
-play_match()
