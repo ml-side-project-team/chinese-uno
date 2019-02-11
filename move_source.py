@@ -21,7 +21,6 @@ class ConsoleSource(MoveSource):
             if entry.isdigit():
                 move = int(entry)
                 if 0 <= move < len(hand):
-                    print(hand[move])
                     return [hand[move]]
             else:
                 if entry in ("p", "pass"):
