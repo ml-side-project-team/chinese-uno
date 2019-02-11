@@ -28,6 +28,13 @@ class TestGame(unittest.TestCase):
         self.assertListEqual([player2, player1], results[0], "Player 2 should win and player 1 should come second")
         self.assertEqual(3, results[1], "The game should have three moves because there are 3 cards")
 
+    def test_player_hand(self):
+        dummy = DummySource("Dummy")
+        player = Model.Player(dummy.name, dummy)
+        player.hand = [Model.Card("Hearts", "4"), Model.Card("Diamonds", "5")]
+        player.play(None)
+        self.assertEqual(len(player.hand), 2, "Player should not modify its own hand")
+
 
 if __name__ == "main":
     unittest.main()
