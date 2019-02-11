@@ -1,4 +1,6 @@
 pipeline {
+	agent any
+
 	environment {
 		PYTHON_TEST = "python3.7 -m unittest"
 	}
