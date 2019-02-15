@@ -1,12 +1,6 @@
-import random
 import move_source
-
-class Move:
-    Types = ["Pass", "SingleCard"]
-
-    def __init__(self, type, cards):
-        self.type = type
-        self.cards = cards
+import random
+from move import Move
 
 
 class Card:
@@ -50,13 +44,6 @@ class Card:
                     deck.append(Card(suit, rank))
         return deck
 
-    @staticmethod
-    def is_illegal(current_card, played_card):
-        if current_card is None:
-            return False
-        else:
-            return not current_card < played_card
-
 
 class Player:
     def __init__(self, name, source):
@@ -82,7 +69,7 @@ class Player:
     # this is to help modularity of ai players so we don't
     # have to re-query them over and over for new plays if they
     # play something illegal
-    def play(self, top_card):
+    def play(self, top_card) -> [Move]:
         return self.source.play(self.hand, top_card)
 
 
@@ -111,30 +98,30 @@ class Game:
         :param players: The players to use in this game. This will be modified
         :param current_player: The index of the starting player
         :param current_card: The current card at the top of the stack
-        :return: The the placement of each player, the total number of moves made in the game (including passes)
+        :return: The the placement of each player, the total number of moves made in the game (including passes),
+            the number of illegal moves that each player made
         """
         scoreboard = []
         moves = 0
         consecutive_passes = 0
+        illegal_moves = {player.name: 0 for player in players}
         while len(players) > 0:
             while current_player < len(players):
                 # If the game has passed all the way around
                 if consecutive_passes >= len(players) - 1:
                     current_card = None
-                print(players[current_player].name + "'s Turn:")
                 # Get move preference from the player
                 card_play_preference = players[current_player].play(current_card)
                 # Translate the preference into a move
-                move = Game.move_from_preference(card_play_preference, current_card)
-                if move is None:
-                    print(players[current_player].name + " Passed")
+                move, illegals = Game.move_from_preference(card_play_preference, players[current_player].hand, current_card)
+                illegal_moves[players[current_player].name] += illegals
+                if move.move_type == Move.Type.PASS:
                     consecutive_passes += 1
                     current_player += 1
-                else:
-                    players[current_player].remove_card(move)
-                    current_card = move
+                elif move.move_type == Move.Type.SINGLE:
+                    players[current_player].remove_card(move.cards[0])
+                    current_card = move.cards[0]
                     consecutive_passes = 0
-                    # If the player has no cards left after they make the move
                     if len(players[current_player].hand) == 0:
                         scoreboard.append(players[current_player])
                         del players[current_player]
@@ -143,7 +130,7 @@ class Game:
                 moves += 1
                 if len(players) > 0:
                     current_player %= len(players)
-        return scoreboard, moves
+        return scoreboard, moves, illegal_moves
 
     @staticmethod
     def shuffle(deck):
@@ -182,23 +169,27 @@ class Game:
         return first_player
 
     @staticmethod
-    def move_from_preference(card_play_preference, current_card):
+    def move_from_preference(card_play_preference, hand, current_card) -> (Move, int):
         """
         Generates a move from a list of card preferences
         :param card_play_preference: The list of cards
+        :param hand: The hand of the player making the move
         :param current_card: The current card at the top of the stack
-        :return: The card to play or None if the player is passing
+        :return: The move to make and the number of illegal moves that preceded the returned move in the preference
+            list
         """
-        if card_play_preference is None:
-            return None
-        for i in range(0, len(card_play_preference)):
-            # check if illegal
-            if Card.is_illegal(current_card, card_play_preference[i]):
-                # TODO dock points
-                return None
-            else:
-                return card_play_preference[i]
-        return None
+        illegals = 0
+        for move in card_play_preference:
+            if move.move_type == Move.Type.PASS:
+                return move, illegals
+            elif move.move_type == Move.Type.SINGLE:
+                if move.is_legal(hand, current_card):
+                    return move, illegals
+                else:
+                    illegals += 1
+                    continue
+        illegals += 1
+        return Move(Move.Type.PASS), illegals
 
 
 def play_match(num_players=6):
