@@ -46,10 +46,10 @@ class Card:
 
 
 class Player:
-    def __init__(self, name, source):
+    def __init__(self, source):
         self.points = 0
         self.hand = []
-        self.name = name
+        self.name = source.name
         self.source = source
 
     def add_points(self, points):
@@ -76,20 +76,22 @@ class Player:
 class Game:
 
     @staticmethod
-    def simulate_game(players):
+    def simulate_game(sources):
         """
         Sets up and runs a game by copying the given players and then shuffling decks using the default behavior
-        :param players: The players to use in the game
+        :param sources: The sources that will provide the moves
         :return: The results of the game
         """
-        # Make a copy of the list of players
-        players_copy = players.copy()
+        players = []
+        for source in sources:
+            players.append(Player(source))
+
         # Deal the players cards
-        Game.distribute_cards(players_copy)
+        Game.distribute_cards(players)
 
         # Get the index of the player who will play first and remove the three of hearts from their hand
-        current_player = Game.set_up_first_player(players_copy)
-        return Game.run_game(players_copy, current_player)
+        current_player = Game.set_up_first_player(players)
+        return Game.run_game(players, current_player)
 
     @staticmethod
     def run_game(players, current_player=0, current_card=Card("Hearts", "3")):

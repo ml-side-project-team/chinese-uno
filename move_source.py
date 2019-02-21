@@ -5,9 +5,21 @@ from move import Move
 class MoveSource:
     __metaclass__ = ABCMeta
 
-    # Return a priority list of moves to make
+    def __init__(self, name):
+        """
+        Base initializer for a MoveSource
+        :param name: The name of the move source
+        """
+        self.name = name
+
     @abstractmethod
     def play(self, hand, current_card) -> [Move]:
+        """
+        Returns a priority list of moves to make
+        :param hand: The hand that the game has to play with
+        :param current_card: The current card at the top of the deck
+        :return: An ordered list of the moves that this source would like to play
+        """
         pass
 
 
